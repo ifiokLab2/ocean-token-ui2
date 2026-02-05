@@ -1,112 +1,133 @@
-"use client"
-import React, { createContext, useContext, useState, useEffect } from "react";
+"use client";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
 // Replace this with your actual contract utility/ABI import
-import { getContract } from "../utils/contract"; 
+import { getContract } from "../utils/contract";
 
-const OceanContext = createContext();
+// 1. Define the shape of your Context
+interface OceanContextType {
+  wallet: string | null;
+  balance: string;
+  recipient: string;
+  setRecipient: (val: string) => void;
+  amount: string;
+  setAmount: (val: string) => void;
+  contract: any;
+  blockReward: string;
+  isPending: boolean;
+  gasEstimate: string;
+  connectWallet: () => Promise<void>;
+  transferTokens: () => Promise<void>;
+  updateBlockReward: () => Promise<void>;
+}
 
-export const OceanProvider = ({ children }) => {
-  const [wallet, setWallet] = useState(null);
+// 2. Initialize with undefined (and handle in the hook) or null
+const OceanContext = createContext<OceanContextType | undefined>(undefined);
+
+export const OceanProvider = ({ children }: { children: ReactNode }) => {
+  const [wallet, setWallet] = useState<string | null>(null);
   const [balance, setBalance] = useState("0");
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
-  const [contract, setContract] = useState(null);
+  const [contract, setContract] = useState<any>(null);
   const [blockReward, setBlockReward] = useState("0");
   const [isPending, setIsPending] = useState(false);
   const [gasEstimate, setGasEstimate] = useState("0");
 
   const fetchGasEstimate = async () => {
-  if (!contract || !recipient || !amount || !wallet) return;
+    // Basic validation
+    if (!contract || !recipient || !amount || !wallet || isNaN(Number(amount)) || Number(amount) <= 0) {
+      setGasEstimate("0");
+      return;
+    }
 
-  try {
-    // We estimate the gas for the transfer function
-    const estimate = await contract.transfer.estimateGas(
-      recipient,
-      ethers.parseUnits(amount, 18)
-    );
-    
-    // Get current gas price from the provider
-    const feeData = await provider.getFeeData();
-    const totalGasCost = estimate * feeData.gasPrice;
+    try {
+      const amountWei = ethers.parseUnits(amount, 18);
+      
+      // Estimate gas units
+      const estimate = await contract.transfer.estimateGas(recipient, amountWei);
+      
+      // Get gas price from the provider attached to the contract
+      const feeData = await contract.runner.provider.getFeeData();
+      const gasPrice = feeData.gasPrice || BigInt(0);
+      
+      const totalGasCost = estimate * gasPrice;
+      setGasEstimate(ethers.formatEther(totalGasCost));
+    } catch (err) {
+      console.error("Gas estimation failed:", err);
+      setGasEstimate("0");
+    }
+  };
 
-    setGasEstimate(ethers.formatEther(totalGasCost));
-  } catch (err) {
-    // If estimation fails (e.g., insufficient balance), we set to 0
-    setGasEstimate("0");
-  }
-};
-
-// Re-run estimate when inputs change
-useEffect(() => {
-  const timeoutId = setTimeout(() => {
-    fetchGasEstimate();
-  }, 500); // Debounce to avoid spamming the RPC
-  return () => clearTimeout(timeoutId);
-}, [amount, recipient]);
+  // Re-run estimate when inputs change (Debounced)
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchGasEstimate();
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [amount, recipient, contract]);
 
   // Load contract + data for current wallet
-  const loadContract = async (currentWallet) => {
+  const loadContract = async (currentWallet: string) => {
     if (!currentWallet) return;
     try {
       const c = await getContract();
       setContract(c);
 
       const b = await c.balanceOf(currentWallet);
-      console.log('balance',ethers.formatUnits(b, 18));
       setBalance(ethers.formatUnits(b, 18));
 
       const reward = await c.blockReward();
       setBlockReward(ethers.formatUnits(reward, 18));
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load contract");
+      toast.error("Failed to load contract data");
     }
   };
 
   // Connect Wallet
   const connectWallet = async () => {
-  // Extra safety check
-  if (typeof window === "undefined" || !window.ethereum) {
-    return toast.error("MetaMask not detected");
-  }
-
-  try {
-    const accounts = await window.ethereum.request({
-      method: "eth_requestAccounts",
-    });
-    setWallet(accounts[0]);
-  } catch (err) {
-    // This catches the "User Rejected" error (Code 4001)
-    if (err.code === 4001) {
-      toast.error("Connection request rejected by user");
-    } else {
-      console.error(err);
-      toast.error("Failed to connect to MetaMask");
+    if (typeof window === "undefined" || !window.ethereum) {
+      return toast.error("MetaMask not detected");
     }
-  }
-};
-useEffect(() => {
-  const checkConnection = async () => {
-    if (typeof window !== "undefined" && window.ethereum) {
-      try {
-        // Look for existing authorized accounts without triggering a popup
-        const accounts = await window.ethereum.request({ method: "eth_accounts" });
-        if (accounts.length > 0) {
-          setWallet(accounts[0]);
-        }
-      } catch (err) {
-        console.error("Error checking connection:", err);
+
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      setWallet(accounts[0]);
+    } catch (err: any) {
+      if (err.code === 4001) {
+        toast.error("Connection request rejected");
+      } else {
+        console.error(err);
+        toast.error("Failed to connect to MetaMask");
       }
     }
   };
-  checkConnection();
-}, []);
+
+  // Check for existing connection on mount
+  useEffect(() => {
+    const checkConnection = async () => {
+      if (typeof window !== "undefined" && window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: "eth_accounts" });
+          if (accounts.length > 0) {
+            setWallet(accounts[0]);
+          }
+        } catch (err) {
+          console.error("Error checking connection:", err);
+        }
+      }
+    };
+    checkConnection();
+  }, []);
+
   // Watch for account changes
   useEffect(() => {
     if (typeof window !== "undefined" && window.ethereum) {
-      const handleAccountsChanged = (accounts) => {
+      const handleAccountsChanged = (accounts: string[]) => {
         if (accounts.length > 0) {
           setWallet(accounts[0]);
         } else {
@@ -132,34 +153,30 @@ useEffect(() => {
   const transferTokens = async () => {
     if (!contract || !amount || !recipient) return toast.error("Missing fields");
     
-    setIsPending(true); // Start loading
+    setIsPending(true);
+    const toastId = toast.loading("Confirming transaction...");
     try {
       const tx = await contract.transfer(recipient, ethers.parseUnits(amount, 18));
+      await tx.wait(); 
       
-      toast.loading("Transaction sent! Waiting for confirmation...", { id: "tx-loading" });
-      
-      await tx.wait(); // Wait for block confirmation
-      
-      toast.dismiss("tx-loading");
-      toast.success("Transfer confirmed on-chain!");
-      loadContract(wallet); 
-    } catch (e) {
-      toast.dismiss("tx-loading");
-      toast.error(e.reason || "Transaction failed");
+      toast.success("Transfer confirmed!", { id: toastId });
+      loadContract(wallet!); 
+    } catch (e: any) {
+      toast.error(e.reason || "Transaction failed", { id: toastId });
     } finally {
-      setIsPending(false); // Stop loading
+      setIsPending(false);
     }
   };
 
   const updateBlockReward = async () => {
-    if (!contract) return;
+    if (!contract || !amount) return;
     try {
       const tx = await contract.setBlockReward(ethers.parseUnits(amount, 18));
       await tx.wait();
       toast.success("Block reward updated");
-      loadContract(wallet);
-    } catch (e) {
-      toast.error(e.message);
+      loadContract(wallet!);
+    } catch (e: any) {
+      toast.error(e.message || "Update failed");
     }
   };
 
@@ -172,6 +189,8 @@ useEffect(() => {
     setAmount,
     contract,
     blockReward,
+    isPending,
+    gasEstimate,
     connectWallet,
     transferTokens,
     updateBlockReward,
@@ -180,5 +199,11 @@ useEffect(() => {
   return <OceanContext.Provider value={value}>{children}</OceanContext.Provider>;
 };
 
-// Custom hook for easy access
-export const useOcean = () => useContext(OceanContext);
+// 3. Custom hook with safety check
+export const useOcean = () => {
+  const context = useContext(OceanContext);
+  if (context === undefined) {
+    throw new Error("useOcean must be used within an OceanProvider");
+  }
+  return context;
+};
