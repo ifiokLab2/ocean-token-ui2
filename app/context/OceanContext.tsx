@@ -5,6 +5,12 @@ import { toast } from "react-hot-toast";
 // Replace this with your actual contract utility/ABI import
 import { getContract } from "../utils/contract";
 
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
+
 // 1. Define the shape of your Context
 interface OceanContextType {
   wallet: string | null;
