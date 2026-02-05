@@ -1,38 +1,33 @@
 import { ethers } from "ethers";
+// @ts-ignore - Ignoring if the JSON doesn't have a generated type file
 import OceanTokenArtifact from "./OceanTokenABI.json";
-//import OceanTokenArtifact from "./OceanTokenABI"; // generate from your compiled contract
+
 const OceanTokenABI = OceanTokenArtifact.abi;
-const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-if (!contractAddress) {
-  throw new Error("NEXT_PUBLIC_CONTRACT_ADDRESS is missing in .env");
-}
+const envAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
+
 export const getProvider = () => {
-  if (!window.ethereum) throw new Error("MetaMask not detected");
+  if (typeof window === "undefined" || !window.ethereum) {
+    throw new Error("MetaMask not detected");
+  }
   return new ethers.BrowserProvider(window.ethereum);
 };
 
-{/*export const getContract = async () => {
-  const provider = getProvider();
-  const signer = await provider.getSigner();
-  return new ethers.Contract(contractAddress, OceanTokenABI, signer);
-}; */}
-
 export const getContract = async () => {
-  // 1. Check if window exists (client-side check)
+  // 1. Validation check
   if (typeof window === "undefined" || !window.ethereum) {
     throw new Error("Please install MetaMask to use this feature");
   }
 
+  if (!envAddress) {
+    throw new Error("NEXT_PUBLIC_CONTRACT_ADDRESS is missing in .env");
+  }
+
   try {
-    // 2. Use BrowserProvider for ethers v6
     const provider = new ethers.BrowserProvider(window.ethereum);
-    
-    // 3. Request account access if not already granted
     const signer = await provider.getSigner();
     
-    const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-    // Assuming your ABI import is working correctly
-    return new ethers.Contract(contractAddress, OceanTokenABI, signer);
+    // envAddress is guaranteed to be a string here due to the check above
+    return new ethers.Contract(envAddress, OceanTokenABI, signer);
   } catch (error) {
     console.error("User denied account access or error occurred:", error);
     throw error;

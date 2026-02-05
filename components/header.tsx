@@ -22,9 +22,10 @@ export function Header() {
   const { wallet, connectWallet, balance } = useOcean();
 
   // Helper to make the address look pretty
-  const formatAddress = (addr) => {
-    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
-  };
+ 
+  const formatAddress = (addr: string) => {
+  return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
+};
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

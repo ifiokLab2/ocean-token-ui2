@@ -4,14 +4,13 @@ import { ethers } from "ethers";
 import { toast } from "react-hot-toast";
 import { getContract } from "../utils/contract";
 
-// 1. Declare the ethereum object on the window
+// Handle the ethereum object on window
 declare global {
   interface Window {
     ethereum?: any;
   }
 }
 
-// 2. Define the strict interface for the Context
 interface OceanContextType {
   wallet: string | null;
   balance: string;
@@ -41,16 +40,12 @@ export const OceanProvider = ({ children }: { children: ReactNode }) => {
   const [gasEstimate, setGasEstimate] = useState("0");
 
   const fetchGasEstimate = async () => {
-    if (!contract || !recipient || !amount || !wallet || isNaN(Number(amount)) || Number(amount) <= 0) {
-      setGasEstimate("0");
-      return;
-    }
+    if (!contract || !recipient || !amount || !wallet || isNaN(Number(amount))) return;
 
     try {
       const amountWei = ethers.parseUnits(amount, 18);
       const estimate = await contract.transfer.estimateGas(recipient, amountWei);
       
-      // Accessing provider safely via the contract runner
       const provider = contract.runner?.provider;
       if (!provider) return;
 
@@ -69,7 +64,7 @@ export const OceanProvider = ({ children }: { children: ReactNode }) => {
       fetchGasEstimate();
     }, 500);
     return () => clearTimeout(timeoutId);
-  }, [amount, recipient, contract, wallet]);
+  }, [amount, recipient, contract]);
 
   const loadContract = async (currentWallet: string) => {
     if (!currentWallet) return;
@@ -101,9 +96,9 @@ export const OceanProvider = ({ children }: { children: ReactNode }) => {
       setWallet(accounts[0]);
     } catch (err: any) {
       if (err.code === 4001) {
-        toast.error("Connection request rejected");
+        toast.error("Connection rejected");
       } else {
-        toast.error("Failed to connect to MetaMask");
+        toast.error("Failed to connect");
       }
     }
   };
@@ -113,11 +108,9 @@ export const OceanProvider = ({ children }: { children: ReactNode }) => {
       if (typeof window !== "undefined" && window.ethereum) {
         try {
           const accounts = await window.ethereum.request({ method: "eth_accounts" });
-          if (accounts.length > 0) {
-            setWallet(accounts[0]);
-          }
+          if (accounts.length > 0) setWallet(accounts[0]);
         } catch (err) {
-          console.error("Error checking connection:", err);
+          console.error(err);
         }
       }
     };
@@ -132,14 +125,10 @@ export const OceanProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setWallet(null);
           setBalance("0");
-          setBlockReward("0");
         }
       };
-
       window.ethereum.on("accountsChanged", handleAccountsChanged);
-      return () => {
-        window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
-      };
+      return () => window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
     }
   }, []);
 
@@ -152,17 +141,15 @@ export const OceanProvider = ({ children }: { children: ReactNode }) => {
       toast.error("Missing fields");
       return;
     }
-    
     setIsPending(true);
-    const toastId = toast.loading("Confirming transaction...");
+    const tId = toast.loading("Sending...");
     try {
       const tx = await contract.transfer(recipient, ethers.parseUnits(amount, 18));
-      await tx.wait(); 
-      
-      toast.success("Transfer confirmed!", { id: toastId });
-      if (wallet) loadContract(wallet); 
+      await tx.wait();
+      toast.success("Success!", { id: tId });
+      loadContract(wallet!);
     } catch (e: any) {
-      toast.error(e.reason || "Transaction failed", { id: toastId });
+      toast.error(e.reason || "Failed", { id: tId });
     } finally {
       setIsPending(false);
     }
@@ -173,10 +160,10 @@ export const OceanProvider = ({ children }: { children: ReactNode }) => {
     try {
       const tx = await contract.setBlockReward(ethers.parseUnits(amount, 18));
       await tx.wait();
-      toast.success("Block reward updated");
-      if (wallet) loadContract(wallet);
+      toast.success("Updated");
+      loadContract(wallet!);
     } catch (e: any) {
-      toast.error(e.message || "Update failed");
+      toast.error("Update failed");
     }
   };
 
@@ -201,8 +188,6 @@ export const OceanProvider = ({ children }: { children: ReactNode }) => {
 
 export const useOcean = () => {
   const context = useContext(OceanContext);
-  if (context === undefined) {
-    throw new Error("useOcean must be used within an OceanProvider");
-  }
+  if (!context) throw new Error("useOcean must be used within OceanProvider");
   return context;
 };
