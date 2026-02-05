@@ -186,7 +186,7 @@ export const OceanProvider = ({ children }: { children: ReactNode }) => {
   return <OceanContext.Provider value={value}>{children}</OceanContext.Provider>;
 };
 
-export const useOcean = () => {
+export const useOcean  = () => {
   const context = useContext(OceanContext);
   if (!context) throw new Error("useOcean must be used within OceanProvider");
   return context;
