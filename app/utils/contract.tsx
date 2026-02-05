@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
-import OceanTokenArtifact from "./OceanTokenABI"; // generate from your compiled contract
+import OceanTokenArtifact from "./OceanTokenABI.json";
+//import OceanTokenArtifact from "./OceanTokenABI"; // generate from your compiled contract
 const OceanTokenABI = OceanTokenArtifact.abi;
 const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 if (!contractAddress) {
