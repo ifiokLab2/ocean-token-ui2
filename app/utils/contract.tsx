@@ -4,7 +4,7 @@ import OceanTokenArtifact from "./OceanTokenABI.json";
 
 const OceanTokenABI = OceanTokenArtifact.abi;
 const envAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-
+console.log("DEBUG: Contract Address is:", process.env.NEXT_PUBLIC_CONTRACT_ADDRESS);
 export const getProvider = () => {
   if (typeof window === "undefined" || !window.ethereum) {
     throw new Error("MetaMask not detected");
