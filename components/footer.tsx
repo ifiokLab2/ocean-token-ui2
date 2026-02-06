@@ -99,7 +99,7 @@ export  function Footer() {
         <div className="border-t border-white/10 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-white/60 text-sm">
-              © 2024 OceanToken. All rights reserved.
+              © 2026 OceanToken. All rights reserved.
             </p>
             <div className="flex gap-6">
               <a href="#privacy" className="text-white/60 hover:text-white transition-colors text-sm">

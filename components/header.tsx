@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Waves, Menu, X, Wallet } from "lucide-react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -20,6 +21,15 @@ export function Header() {
   
   // Pull what we need from Context
   const { wallet, connectWallet, balance } = useOcean();
+  const handleWalletAction = () => {
+    if (wallet) {
+      // If connected, go to dashboard
+      router.push("/dashboard");
+    } else {
+      // If not connected, trigger your "Get OCT" logic
+      console.log("Redirecting to purchase or opening connect modal...");
+    }
+  };
 
   // Helper to make the address look pretty
  
@@ -78,8 +88,14 @@ export function Header() {
             </Button>
           )}
 
-          <Button className="text-sm font-medium">
+          {/*<Button className="text-sm font-medium">
             Get OCT
+          </Button> */}
+          <Button 
+            onClick={handleWalletAction} 
+            className="text-sm font-medium"
+          >
+            {wallet ? "Go to Dashboard" : "Get OCT"}
           </Button>
         </div>
 
@@ -123,8 +139,12 @@ export function Header() {
                   Connect Wallet
                 </Button>
               )}
-              <Button className="w-full">
-                Get OCT
+              
+               <Button 
+                onClick={handleWalletAction} 
+                className="w-full"
+              >
+                {wallet ? "Go to Dashboard" : "Get OCT"}
               </Button>
             </div>
           </div>

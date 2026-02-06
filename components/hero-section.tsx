@@ -1,4 +1,20 @@
+"use client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import { useOcean } from "@/app/context/OceanContext";
+
 export function HeroSection() {
+  const { wallet, connectWallet, balance } = useOcean();
+  const handleWalletAction = () => {
+    if (wallet) {
+      // If connected, go to dashboard
+      router.push("/dashboard");
+    } else {
+      // If not connected, trigger your "Get OCT" logic
+      console.log("Redirecting to purchase or opening connect modal...");
+    }
+  };
   return (
     // Fixed: Added dark mode gradient colors
     <section className="bg-gradient-to-br from-blue-50 to-white dark:from-slate-950 dark:to-background py-20 lg:py-32 transition-colors duration-300">
@@ -31,9 +47,11 @@ export function HeroSection() {
 
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
-                Launch App
+              <button onClick={handleWalletAction}  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                
+                {wallet ? "Go to Dashboard" : "Connect Wallet"}
               </button>
+              
               {/* Fixed: border-gray-300 -> border-border, text-gray-900 -> text-foreground */}
               <button className="px-6 py-3 border-2 border-border text-foreground rounded-lg font-semibold hover:bg-accent transition-colors">
                 Read Whitepaper
