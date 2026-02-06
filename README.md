@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌊 Ocean Token
 
-## Getting Started
+**Ocean Token** is a next-generation ERC-20 token built on the Ethereum blockchain, designed for speed, transparency, and unstoppable community growth.
 
-First, run the development server:
+Powered by smart contracts and secured by Ethereum, Ocean Token enables trustless transactions, DeFi integrations, and community-driven innovation — all while putting full control in the hands of holders.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Features
+- ⚡ Fast & secure Ethereum transactions  
+- 🔒 Smart-contract powered and trustless  
+- 🔥 Burnable supply for long-term value  
+- 🛑 Pausable for enhanced security  
+- 🌐 DeFi-ready and ecosystem friendly  
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🧠 Vision
+Ocean Token aims to build a strong, decentralized ecosystem where users can transact freely, earn rewards, and participate in the future of blockchain innovation.
 
-## Learn More
+We’re not just launching a token — we’re making waves. 🌊
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠 Tech Stack
+- **Blockchain:** Ethereum  
+- **Standard:** ERC-20  
+- **Language:** Solidity  
+- **Frameworks:** OpenZeppelin  
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📦 Token Utility
+- DeFi participation  
+- Community rewards  
+- Ecosystem transactions  
+- Future dApp integrations  
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## ⚠️ Disclaimer
+Ocean Token is a blockchain project under active development. Always do your own research (DYOR) before participating.
+
+---
+
+## 🌊 Join the Movement
+The ocean is vast. The future is decentralized.  
+**Ocean Token is just getting started.**
