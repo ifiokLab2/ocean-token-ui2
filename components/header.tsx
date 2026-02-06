@@ -18,7 +18,7 @@ const navLinks = [
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+  const router = useRouter();
   // Pull what we need from Context
   const { wallet, connectWallet, balance } = useOcean();
   const handleWalletAction = () => {

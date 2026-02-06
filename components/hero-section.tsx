@@ -6,6 +6,7 @@ import { useOcean } from "@/app/context/OceanContext";
 
 export function HeroSection() {
   const { wallet, connectWallet, balance } = useOcean();
+  const router = useRouter();
   const handleWalletAction = () => {
     if (wallet) {
       // If connected, go to dashboard
